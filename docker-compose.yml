@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: sis-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_DATABASE:-sis_db}
+      MYSQL_USER: ${DB_USER:-sis_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sis_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Optional: Mount initial SQL schema
+      # - ./database_schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - sis-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sis-backend
+    environment:
+      PORT: 3001
+      NODE_ENV: development
+      DB_HOST: db
+      DB_USER: ${DB_USER:-sis_user}
+      DB_PASSWORD: ${DB_PASSWORD:-sis_password}
+      DB_DATABASE: ${DB_DATABASE:-sis_db}
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - sis-network
+    command: npm start
+
+volumes:
+  mysql_data:
+
+networks:
+  sis-network:
+    driver: bridge

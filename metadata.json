@@ -1,0 +1,5 @@
+
+{
+  "name": "SIS Admin Panel",
+  "description": "A comprehensive admin panel to manage a Student Information System. It allows for full CRUD operations on departments, students, instructors, courses, and more, providing a centralized platform for university administration."
+}
