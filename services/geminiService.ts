@@ -1,8 +1,14 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// FIX: As per guidelines, assume API_KEY is present in environment variables.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+// Use Vite environment variable for API key (prefixed with VITE_ for client-side access)
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  throw new Error("VITE_GEMINI_API_KEY environment variable is not set. Please add it to .env.local");
+}
+
+const ai = new GoogleGenAI({ apiKey });
 
 export const generateReport = async (query: string, data: any): Promise<string> => {
   // FIX: Removed API key check as it's assumed to be available.
